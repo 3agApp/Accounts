@@ -1,16 +1,20 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "3ag/accounts",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "3AG Accounts — OpenID Connect identity provider for the 3AG suite.",
     "keywords": [
         "laravel",
-        "framework"
+        "oidc",
+        "identity"
     ],
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "jeremy379/laravel-openid-connect": "^3.3",
+        "laravel/fortify": "^1.39",
         "laravel/framework": "^13.17",
+        "laravel/passport": "^13.0",
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
@@ -43,6 +47,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
+            "@php artisan passport:keys --force",
             "npm install --ignore-scripts",
             "npm run build"
         ],
@@ -76,7 +81,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/passport"
+            ]
         }
     },
     "config": {
