@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
+use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 
 /*
@@ -15,7 +19,7 @@ use Tests\TestCase;
 */
 
 pest()->extend(TestCase::class)
- // ->use(RefreshDatabase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -44,7 +48,73 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Register a first-party OAuth client, with its plain secret still readable.
+ */
+function firstPartyClient(string $name = 'SalesReport', string $redirectUri = 'http://localhost:8001/auth/accounts/callback'): Client
 {
-    // ..
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient($name, [$redirectUri]);
+
+    $client->forceFill([
+        'first_party' => true,
+        'post_logout_redirect_uris' => ['http://localhost:8001/'],
+    ])->save();
+
+    return $client;
+}
+
+/**
+ * Register a client that is not ours, and so must ask for consent.
+ */
+function thirdPartyClient(string $name = 'Some Other App', string $redirectUri = 'https://example.test/callback'): Client
+{
+    return app(ClientRepository::class)->createAuthorizationCodeGrantClient($name, [$redirectUri]);
+}
+
+/**
+ * Generate a PKCE verifier and its S256 challenge.
+ *
+ * @return array{0: string, 1: string}
+ */
+function pkcePair(): array
+{
+    $verifier = Str::random(64);
+
+    $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
+
+    return [$verifier, $challenge];
+}
+
+/**
+ * Pull the authorization code out of a redirect back to the client.
+ */
+function authorizationCodeFrom(TestResponse $response): string
+{
+    parse_str((string) parse_url($response->headers->get('Location'), PHP_URL_QUERY), $query);
+
+    return $query['code'];
+}
+
+/**
+ * Decode a JWT's payload without verifying it.
+ *
+ * @return array<string, mixed>
+ */
+function decodeJwtPayload(string $jwt): array
+{
+    [, $payload] = explode('.', $jwt);
+
+    return json_decode(base64_decode(strtr($payload, '-_', '+/')), true);
+}
+
+/**
+ * Decode a JWT's header without verifying it.
+ *
+ * @return array<string, mixed>
+ */
+function decodeJwtHeader(string $jwt): array
+{
+    [$header] = explode('.', $jwt);
+
+    return json_decode(base64_decode(strtr($header, '-_', '+/')), true);
 }
