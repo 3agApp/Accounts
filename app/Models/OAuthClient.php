@@ -9,13 +9,16 @@ use Laravel\Passport\Scope;
 class OAuthClient extends Client
 {
     /**
-     * First-party clients belong to the 3AG suite itself, so signing in to Accounts is
-     * consent enough and the user is never shown the authorization prompt for them.
+     * Always show the authorization prompt so the user can confirm which
+     * account continues into the requesting app, or switch accounts first.
+     *
+     * Suite apps also send prompt=consent on interactive login so this stays
+     * true even when the user has previously granted the same scopes.
      *
      * @param  Scope[]  $scopes
      */
     public function skipsAuthorization(Authenticatable $user, array $scopes): bool
     {
-        return $this->firstParty();
+        return false;
     }
 }
