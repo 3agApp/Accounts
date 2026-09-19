@@ -12,7 +12,7 @@ require 'recipe/laravel.php';
 
 // The repository is public, so the server clones it over HTTPS and needs no
 // deploy key.
-set('repository', 'https://github.com/SourovCodes/Accounts.git');
+set('repository', 'https://github.com/3agApp/Accounts.git');
 set('branch', getenv('DEPLOY_BRANCH') ?: 'main');
 set('keep_releases', 2);
 
