@@ -34,14 +34,13 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        $user = User::create([
+        // Left unverified on purpose. Registration fires Registered, which
+        // sends the link that stamps email_verified_at, and every app in the
+        // suite trusts the address this returns.
+        return User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),
         ]);
-
-        $user->forceFill(['email_verified_at' => now()])->save();
-
-        return $user;
     }
 }

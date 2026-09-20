@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailIsVerifiedForOAuth;
+
 return [
 
     /*
@@ -15,7 +17,20 @@ return [
 
     'guard' => 'web',
 
-    'middleware' => [],
+    /*
+    |--------------------------------------------------------------------------
+    | Passport Route Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Applied to every route Passport registers. The one entry here stops an
+    | unverified address reaching the authorization screen; it is a no-op on
+    | the back-channel routes, which carry no session user.
+    |
+    */
+
+    'middleware' => [
+        EnsureEmailIsVerifiedForOAuth::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
